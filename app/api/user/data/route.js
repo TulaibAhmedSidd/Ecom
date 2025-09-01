@@ -1,0 +1,27 @@
+import { NextResponseMethod } from "@/common/commonFunc";
+import connectDB from "@/config/db";
+import User from "@/models/user";
+import { getAuth } from "@clerk/nextjs/server";
+import { NextResponse } from "next/server";
+
+export async function GET(request) {
+
+    try {
+
+        const { userId } = getAuth()
+        await connectDB();
+
+        const user = await User.findById(userId);
+        if (!user) {
+            return NextResponse.json({ success: false, message: 'user not found' })
+            // return NextResponseMethod(false, {}, 'user not found')
+        }
+        return NextResponse.json({ success: true, user })
+        // return NextResponseMethod(false, user, '')
+
+    } catch (error) {
+        return NextResponse.json({ success: false, message: 'user not found' })
+        // return NextResponseMethod(false, {}, 'user not found')
+
+    }
+}

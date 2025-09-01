@@ -1,24 +1,29 @@
 "use client";
+
 import React from "react";
 import { assets, BagIcon, BoxIcon, CartIcon, HomeIcon } from "@/assets/assets";
 import Link from "next/link";
 import { useAppContext } from "@/context/AppContext";
 import Image from "next/image";
-import { useClerk, UserButton } from "@clerk/nextjs";
+import { useClerk, useUser, UserButton } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
 
 const Navbar = () => {
-  const { isSeller, router, user } = useAppContext() || {}; // fallback {}
-  const { openSignIn } = useClerk() || {};
-
-  console.log("user", user);
+  const router = useRouter();
+  const { isSeller } = useAppContext() || {};
+  const { openSignIn } = useClerk();
+  const { isLoaded, user } = useUser(); // ✅ get user safely
 
   return (
     <nav className="flex items-center justify-between px-6 md:px-16 lg:px-32 py-3 border-b border-gray-300 text-gray-700">
+      {/* Logo */}
       <Image
         className="cursor-pointer w-28 md:w-32"
-        onClick={() => router?.push?.("/")}
+        onClick={() => router.push("/")}
         src={assets.logo}
         alt="logo"
+        width={120}
+        height={40} // ✅ always specify width/height
       />
 
       {/* Desktop menu */}
@@ -38,7 +43,7 @@ const Navbar = () => {
 
         {isSeller && (
           <button
-            onClick={() => router?.push?.("/seller")}
+            onClick={() => router.push("/seller")}
             className="text-xs border px-4 py-1.5 rounded-full"
           >
             Seller Dashboard
@@ -47,22 +52,28 @@ const Navbar = () => {
       </div>
 
       {/* Desktop right actions */}
-      <ul className="hidden md:flex items-center gap-4 ">
-        <Image className="w-4 h-4" src={assets.search_icon} alt="search icon" />
-        <ButtonWithSign user={user} router={router} openSignIn={openSignIn} />
+      <ul className="hidden md:flex items-center gap-4">
+        <Image
+          className="w-4 h-4"
+          src={assets.search_icon}
+          alt="search icon"
+          width={16}
+          height={16}
+        />
+        <ButtonWithSign isLoaded={isLoaded} user={user} router={router} openSignIn={openSignIn} />
       </ul>
 
       {/* Mobile right actions */}
       <div className="flex items-center md:hidden gap-3">
         {isSeller && (
           <button
-            onClick={() => router?.push?.("/seller")}
+            onClick={() => router.push("/seller")}
             className="text-xs border px-4 py-1.5 rounded-full"
           >
             Seller Dashboard
           </button>
         )}
-        <ButtonWithSign user={user} router={router} openSignIn={openSignIn} />
+        <ButtonWithSign isLoaded={isLoaded} user={user} router={router} openSignIn={openSignIn} />
       </div>
     </nav>
   );
@@ -70,7 +81,10 @@ const Navbar = () => {
 
 export default Navbar;
 
-const ButtonWithSign = ({ user, router, openSignIn }) => {
+const ButtonWithSign = ({ isLoaded, user, router, openSignIn }) => {
+  // ✅ Don't render anything until Clerk has loaded
+  if (!isLoaded) return null;
+
   if (user) {
     return (
       <UserButton>
@@ -78,35 +92,40 @@ const ButtonWithSign = ({ user, router, openSignIn }) => {
           <UserButton.Action
             label="Home"
             labelIcon={<HomeIcon />}
-            onClick={() => router?.push?.("/")}
+            onClick={() => router.push("/")}
           />
           <UserButton.Action
             label="Products"
             labelIcon={<BoxIcon />}
-            onClick={() => router?.push?.("/all-products")}
+            onClick={() => router.push("/all-products")}
           />
           <UserButton.Action
             label="Cart"
             labelIcon={<CartIcon />}
-            onClick={() => router?.push?.("/cart")}
+            onClick={() => router.push("/cart")}
           />
           <UserButton.Action
             label="My Orders"
             labelIcon={<BagIcon />}
-            onClick={() => router?.push?.("/my-orders")}
+            onClick={() => router.push("/my-orders")}
           />
         </UserButton.MenuItems>
       </UserButton>
     );
-  } else {
-    return (
-      <button
-        onClick={() => openSignIn?.()}
-        className="flex items-center gap-2 hover:text-gray-900 transition"
-      >
-        <Image src={assets.user_icon} alt="user icon" />
-        Account
-      </button>
-    );
   }
+
+  return (
+    <button
+      onClick={() => openSignIn?.()}
+      className="flex items-center gap-2 hover:text-gray-900 transition"
+    >
+      <Image
+        src={assets.user_icon}
+        alt="user icon"
+        width={20}
+        height={20}
+      />
+      Account
+    </button>
+  );
 };
