@@ -7,4 +7,7 @@ export const serviceUrls = {
     getCart:'/api/cart/get',
     addAddress:'/api/user/add-address',
     getAddress:'/api/user/get-address',
+    createOrder:'/api/order/create',
+    listOrder:'/api/order/list',
+    listSellerOrder:'/api/order/seller-orders',
 }

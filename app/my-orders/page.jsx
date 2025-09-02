@@ -2,26 +2,48 @@
 import React, { useEffect, useState } from "react";
 import { assets, orderDummyData } from "@/assets/assets";
 import Image from "next/image";
-import { useAppContext } from "@/context/AppContext";
+import { getHeaders, useAppContext } from "@/context/AppContext";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import Loading from "@/components/Loading";
+import axios from "axios";
+import { serviceUrls } from "@/service/urls";
 
 const MyOrders = () => {
 
     const { currency } = useAppContext();
+    const { getToken, router,user } = useAppContext();
 
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
 
     const fetchOrders = async () => {
-        setOrders(orderDummyData)
-        setLoading(false);
+        setLoading(true);
+        try {
+            const token = await getToken();
+            const { data } = await axios.get(serviceUrls.listOrder, getHeaders(token));
+            if (data?.success) {
+                setOrders(data?.body?.reverse())
+                setLoading(false);
+            } else {
+                setLoading(false);
+                toast.error(data.message)
+            }
+        } catch (error) {
+            setLoading(false);
+            toast.error(error.message)
+        }
+
+        // setOrders(orderDummyData)
+        // setLoading(false);
     }
 
     useEffect(() => {
-        fetchOrders();
-    }, []);
+        if(user){
+            fetchOrders();
+
+        }
+    }, [user]);
 
     return (
         <>
