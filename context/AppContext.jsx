@@ -11,6 +11,12 @@ export const AppContext = createContext();
 
 export const useAppContext = () => useContext(AppContext);
 
+export function getHeaders(token) {
+  return {
+    headers: { Authorization: `Bearer ${token}` },
+  }
+}
+
 export const AppContextProvider = ({ children }) => {
   const currency = process.env.NEXT_PUBLIC_CURRENCY;
   const router = useRouter();
@@ -24,7 +30,7 @@ export const AppContextProvider = ({ children }) => {
 
   // fetch products once client-side
   useEffect(() => {
-    setProducts(productsDummyData);
+    fetchProductData();
   }, []);
 
   // fetch user data once Clerk is loaded
@@ -34,6 +40,19 @@ export const AppContextProvider = ({ children }) => {
     }
   }, [isLoaded, user]);
 
+  const fetchProductData = async () => {
+    try {
+      const { data } = await axios.get(serviceUrls.listProduct);
+      if (data?.success) {
+        setProducts(data?.body);
+      } else {
+        toast.error("Can't fetch products data");
+      }
+    } catch (error) {
+      toast.error("Can't fetch products data");
+      console.error(error);
+    }
+  };
   const fetchUserData = async () => {
     try {
       if (user?.publicMetadata?.role === "seller") {
@@ -41,13 +60,11 @@ export const AppContextProvider = ({ children }) => {
       }
 
       const token = await getToken();
-      const { data } = await axios.get(serviceUrls.getUserData, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const { data } = await axios.get(serviceUrls.getUserData, getHeaders(token));
 
       if (data?.success) {
-        setUserData(data.user);
-        setCartItems(data.user?.cartItems || {});
+        setUserData(data?.body);
+        setCartItems(data?.body?.cartItems || {});
       } else {
         toast.error("Can't fetch user data");
       }
@@ -57,21 +74,52 @@ export const AppContextProvider = ({ children }) => {
     }
   };
 
-  const addToCart = (itemId) => {
-    setCartItems((prev) => {
-      const updated = { ...prev };
-      updated[itemId] = (updated[itemId] || 0) + 1;
-      return updated;
-    });
+  const addToCart = async (itemId) => {
+    // setCartItems((prev) => {
+    //   const updated = { ...prev };
+    //   updated[itemId] = (updated[itemId] || 0) + 1;
+    //   return updated;
+    // });
+    let cartData = structuredClone(cartItems);
+
+    if (cartData[itemId]) {
+      cartData[itemId] += 1
+    } else {
+      cartData[itemId] = 1
+    }
+    setCartItems(cartData)
+    if (user) {
+      try {
+        const token = await getToken();
+        await axios.post(serviceUrls.updateCart, {cartData}, getHeaders(token));
+        toast.success("Cart item Added")
+      } catch (error) {
+        toast.error(error?.message)
+      }
+    }
+
   };
 
-  const updateCartQuantity = (itemId, quantity) => {
-    setCartItems((prev) => {
-      const updated = { ...prev };
-      if (quantity === 0) delete updated[itemId];
-      else updated[itemId] = quantity;
-      return updated;
-    });
+  const updateCartQuantity = async (itemId, quantity) => {
+
+    let cartData = structuredClone(cartItems);
+
+    if (quantity == 0) {
+      delete cartData[itemId]
+    } else {
+      cartData[itemId] = quantity
+    }
+    setCartItems(cartData)
+
+    if (user) {
+      try {
+        const token = await getToken();
+        await axios.post(serviceUrls.updateCart, {cartData}, getHeaders(token));
+        toast.success("Cart item updated")
+      } catch (error) {
+        toast.error(error?.message)
+      }
+    }
   };
 
   const getCartCount = () =>

@@ -44,14 +44,14 @@ export async function POST(request) {
                 const arrayBuffer = await file.arrayBuffer();
                 const buffer = Buffer.from(arrayBuffer);
 
-                return new Promise((res, rej) => {
+                return new Promise((resp, rej) => {
                     const stream = cloudinary.uploader.upload_stream(
                         { resource_type: 'auto' },
                         (err, res) => {
                             if (err) {
                                 rej(err)
                             } else {
-                                res(res)
+                                resp(res)
                             }
                         }
                     )
@@ -70,12 +70,12 @@ export async function POST(request) {
             description,
             category,
             price: Number(price),
-            offerPrice: Number(offerPriceNumber),
+            offerPrice: Number(offerPrice),
             image,
             date: Date.now()
         })
 
-        NextResponseMethod(true, newProduct, 'Upload succesfully')
+        return NextResponseMethod(true, newProduct, 'Upload succesfully')
 
     } catch (error) {
         console.log("err", error)
