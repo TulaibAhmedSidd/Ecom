@@ -83,9 +83,6 @@ const Navbar = () => {
           width={16}
           height={16}
         />
-        <button onClick={()=>fetchUserData()}>
-          press me
-        </button>
         <ButtonWithSign isLoaded={isLoaded} user={user} router={router} openSignIn={openSignIn} />
       </ul>
 
