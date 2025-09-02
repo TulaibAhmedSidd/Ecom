@@ -20,7 +20,7 @@ export async function GET(request) {
             return NextResponseMethod(false, {}, 'user not found')
         }
         // return NextResponse.json({ success: true, user })
-        return NextResponseMethod(false, user, '')
+        return NextResponseMethod(true, user, 'user found')
 
     } catch (error) {
         console.log("err",error)

@@ -6,6 +6,7 @@ import { useAppContext } from "@/context/AppContext";
 import axios from "axios";
 import { serviceUrls } from "@/service/urls";
 import toast from "react-hot-toast";
+import { AppDataConst } from "@/common/dataConstant";
 
 const AddProduct = () => {
 
@@ -13,7 +14,7 @@ const AddProduct = () => {
   const [files, setFiles] = useState([]);
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
-  const [category, setCategory] = useState('Earphone');
+  const [category, setCategory] = useState(AppDataConst.category.Earphone);
   const [price, setPrice] = useState('');
   const [offerPrice, setOfferPrice] = useState('');
 
@@ -36,14 +37,14 @@ const AddProduct = () => {
 
     try {
       const token = await getToken()
-      const { data } = await axios.post(serviceUrls.addProduct, formData, { headers: { Authorization: `Bearer${token}` } });
+      const { data } = await axios.post(serviceUrls.addProduct, formData, { headers: { Authorization: `Bearer ${token}` } });
 
       if (data.success) {
         toast.success('Porduct added');
         setFiles([])
         setName('')
         setDescription('')
-        setCategory('Earphone')
+        setCategory(AppDataConst.category.Earphone)
         setPrice('')
         setOfferPrice('')
       } else {
@@ -126,13 +127,13 @@ const AddProduct = () => {
               onChange={(e) => setCategory(e.target.value)}
               defaultValue={category}
             >
-              <option value="Earphone">Earphone</option>
-              <option value="Headphone">Headphone</option>
-              <option value="Watch">Watch</option>
-              <option value="Smartphone">Smartphone</option>
-              <option value="Laptop">Laptop</option>
-              <option value="Camera">Camera</option>
-              <option value="Accessories">Accessories</option>
+              <option value={AppDataConst.category.Earphone}>{AppDataConst.category.Earphone}</option>
+              <option value={AppDataConst.category.Headphone}>{AppDataConst.category.Headphone}</option>
+              <option value={AppDataConst.category.Watch}>{AppDataConst.category.Watch}</option>
+              <option value={AppDataConst.category.Smartphone}>{AppDataConst.category.Smartphone}</option>
+              <option value={AppDataConst.category.Laptop}>{AppDataConst.category.Laptop}</option>
+              <option value={AppDataConst.category.Camera}>{AppDataConst.category.Camera}</option>
+              <option value={AppDataConst.category.Accessories}>{AppDataConst.category.Accessories}</option>
             </select>
           </div>
           <div className="flex flex-col gap-1 w-32">
